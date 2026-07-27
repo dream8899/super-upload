@@ -1,0 +1,4 @@
+interface:
+  display_name: "SuperUpload"
+  short_description: "为多平台视频与视频号批量草稿提供安全可复现的自动发布工作流"
+  default_prompt: "Use $super-upload to safely prepare and upload a batch of WeChat Channels videos as drafts."

@@ -12,8 +12,10 @@ description: 当 agent 需要用 `sau` CLI 向抖音、B 站、小红书、快�
 1. 先安装并运行 `sau --help`，再开始登录或上传。
 2. 账号 cookie、`conf.py`、二维码和视频素材都是本地敏感数据：不得提交、复制到日志或发送给第三方。
 3. 第一次或批量任务先保存草稿；只有用户明确授权才公开发布或定时发布。
-4. 视频号单个任务可用 `--keep-open`；批量命令默认复用一个可见浏览器窗口，整批完成后保持打开。不要为每条视频反复创建和关闭浏览器。
-5. 每次成功提交后检查页面确认状态或草稿列表，禁止轮询式重复点击“保存草稿”或“发表”。
+4. 视频号首次扫码写入账号专属持久化 Chrome Profile；单个任务可用 `--keep-open`，批量命令默认复用同一 Profile 和可见窗口。不要为每条视频反复创建、关闭或切换浏览器。
+5. “保存草稿”只点击一次；等待 10 秒后进入草稿箱按主标题核验，成功后随机等待 10–20 秒再处理下一条。禁止轮询式重复点击。
+6. 所有批量上传必须接入 SuperMedia 统一账本：上传前按成品、源作品和目标账号
+   查重并预约；完成或中断后回写状态。没有唯一 `source_key` 的文件进入 HOLD。
 
 ## 最短路径：视频号
 
@@ -32,11 +34,22 @@ uv run sau tencent upload-video-batch --account main --manifest batch.json
 
 `upload-video-batch` 默认可见、默认保留窗口、默认将每项保存草稿；关闭窗口才结束会话。相对素材路径以 `batch.json` 所在目录为准。无人值守时才显式使用 `--headless --close-when-done`。
 
+普通 Chrome 的已登录标签不能替代 `sau` 的持久 Profile：浏览器桥接可辅助检查页面，但通常不能向视频号子页面注入本地文件。需要自动上传时，首次运行 `sau tencent login --account <name> --headed` 扫码一次，后续复用该账号 Profile。
+
+## 模板 A：目录一键草稿
+
+用户要求“账号 A、指定目录、批量草稿、保留窗口”时，读取 `references/template-a.md` 并运行 `scripts/template_a.py`。脚本先检查账号专属持久 Profile、生成可审阅清单，再以一个可见窗口执行；每次单击保存后等待 10 秒进入草稿箱按标题核验，默认相邻已确认草稿间隔为 10–20 秒，并在整批确认后回到平台主页。不要添加定时刷新、点击其他区域或其他模拟在线行为。
+
+模板 A 默认从素材路径找到 `Video_Download`，调用 `superdown88` 的
+`media_asset_catalog.py` 完成 preflight、reservation 和结果回写。相同成品发往
+同一账号始终阻止；同源不同 Remix 需要用户明确允许。直接使用 `sau` 时也必须
+按 `references/media-lineage.md` 手工执行同样门禁。
+
 ## 选择工作流
 
 | 目标 | 优先命令 |
 | --- | --- |
-| 新账号或 cookie 失效 | `sau <platform> login --account <name> --headed` |
+| 新账号或视频号 Profile 失效 | `sau <platform> login --account <name> --headed` |
 | 检查登录状态 | `sau <platform> check --account <name>` |
 | 单条视频 | `sau <platform> upload-video ...` |
 | 视频号多条视频 | `sau tencent upload-video-batch --manifest <json>` |
@@ -50,3 +63,5 @@ uv run sau tencent upload-video-batch --account main --manifest batch.json
 - 视频号登录、草稿、批量与避坑：`references/wechat-channels.md`
 - Codex、Claude Code、OpenClaw、Kimi WebBridge 等调用约定：`references/agents.md`
 - 驱动、二维码 iframe、cookie 与重复提交故障：`references/troubleshooting.md`
+- 模板 A 的一键调用与逐条文案 JSON：`references/template-a.md`
+- 三个 Skill 的资产血缘、查重、预约和回写：`references/media-lineage.md`

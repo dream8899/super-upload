@@ -1,6 +1,6 @@
 ---
 name: super-upload
-description: 当 agent 需要用 `sau` CLI 向抖音、B 站、小红书、快手、视频号、百家号、TikTok 或 YouTube 上传视频时使用。视频号为优先验证路径，涵盖跨平台安装、微信扫码、草稿优先、持久浏览器窗口和批量任务。
+description: 当 agent 需要用 `sau` CLI 向抖音、B 站、小红书、快手、视频号、百家号、TikTok 或 YouTube 上传视频时使用，也覆盖即梦（Jimeng）批量视频生成的上游生产工作流。视频号为优先验证路径，涵盖跨平台安装、微信扫码、草稿优先、持久浏览器窗口和批量任务。
 ---
 
 # SuperUpload
@@ -47,6 +47,17 @@ uv run sau tencent upload-video-batch --account main --manifest batch.json
 同一账号始终阻止；同源不同 Remix 需要用户明确允许。直接使用 `sau` 时也必须
 按 `references/media-lineage.md` 手工执行同样门禁。
 
+## 即梦（Jimeng）批量视频生成（上游生产）
+
+即梦是视频生产环节（上传前的上游）；`sau` 不支持即梦，用 Kimi WebBridge 控制已登录
+即梦的 Chrome，运行 `scripts/jimeng_video_batch.py`（plan/prepare/generate/poll/
+run-one/run-pipeline/run-batch-conv）。生成视频回写来源文件夹并更新 `_ACCOUNT_BOOK.csv`，
+发布再走本 Skill 上传流程。详细目录约定、命令与避坑见 `references/jimeng-video-batch.md`。
+
+即梦环节铁律：批量前先出积分计划并取得授权才自动点「生成」；提交后校验数字 workspace
+与积分扣减；下载前 MD5 查重；图片用 base64 注入、不点击上传槽；同会话批量按唯一提示词
+标记定位轮次；断点状态文件防重复提交；失败条目隔离并保留错误文件。
+
 ## 选择工作流
 
 | 目标 | 优先命令 |
@@ -68,6 +79,7 @@ uv run sau tencent upload-video-batch --account main --manifest batch.json
 - 模板 A 的一键调用与逐条文案 JSON：`references/template-a.md`
 - 三个 Skill 的资产血缘、查重、预约和回写：`references/media-lineage.md`
 - 学习候选、人工审批、核心保护和回滚：`references/controlled-evolution.md`
+- 即梦批量视频生成与避坑：`references/jimeng-video-batch.md`
 
 修改任何核心文件前必须另开维护任务，预先提交人工批准记录，并运行
 `python3 scripts/controlled_evolution_guard.py --approval-file ...`。不得伪造批准，也不得

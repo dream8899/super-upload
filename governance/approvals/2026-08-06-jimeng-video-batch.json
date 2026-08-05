@@ -1,0 +1,19 @@
+{
+  "status": "approved",
+  "approved_by": "human:solo",
+  "approved_at": "2026-08-06T00:35:00+08:00",
+  "approval_reference": "用户明确指令 2026-08-06：沉淀即梦批量视频生成经验并更新到 super-upload（不要另建 skill）",
+  "scope": [
+    "SKILL.md",
+    "references/jimeng-video-batch.md",
+    "scripts/jimeng_video_batch.py"
+  ],
+  "reason": "把已验证的即梦（Jimeng）批量视频生成工作流沉淀进 super-upload，作为上传流程的上游生产环节，避免每次重新摸索页面机制与门禁。",
+  "risk": "新增流程与既有上传流程并存，若选择器/页面改版会失效；脚本按渠道经验候选维护，不覆盖上传核心门禁。",
+  "rollback": "git revert 本次提交即可恢复基线；脚本与参考均为新增文件，不影响既有上传功能。",
+  "tests": [
+    "python3 -m py_compile scripts/jimeng_video_batch.py",
+    "python3 scripts/controlled_evolution_guard.py --approval-file governance/approvals/2026-08-06-jimeng-video-batch.json",
+    "python3 scripts/quick_validate.py .. 或 skill-creator quick_validate（如可用）"
+  ]
+}

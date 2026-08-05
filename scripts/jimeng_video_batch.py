@@ -229,15 +229,51 @@ def _set_duration(sec=DEFAULT_DURATION):
       if(!b) return 'no-duration-btn';
       b.click(); return 'opened';
     })()""")
-    time.sleep(0.8)
+    time.sleep(1.0)
+    # 1) 刻度按钮精确命中（0/5/10/15…）
     tick = eval_js("""(() => {
-      const target = %d;
-      const b=[...document.querySelectorAll('button')].find(x=>x.getClientRects().length && (x.innerText||'').trim()===String(target));
+      const t=String(%d);
+      const b=[...document.querySelectorAll('button')].find(x=>x.getClientRects().length && (x.innerText||'').trim()===t && x.offsetWidth<60);
       if(!b) return 'no-tick';
       b.click(); return 'clicked';
     })()""" % sec)
-    # 关闭面板
-    eval_js("""(() => { document.body.click(); return 'ok'; })()""")
+    if tick != "clicked":
+        # 2) 非刻度秒数（如 12s）→ 滑块轨道点击：x = left + w * sec / max
+        info = eval_js("""(() => {
+          const road=document.querySelector('[class*=slider-road]') || document.querySelector('[class*=slider-visual-rail]') || document.querySelector('[class*=slider-wrap]');
+          if(!road) return null;
+          const r=road.getBoundingClientRect();
+          const ticks=[...document.querySelectorAll('button')].filter(b=>/^\\d+$/.test((b.innerText||'').trim())&&b.getClientRects().length).map(b=>parseInt(b.innerText,10));
+          const max=Math.max.apply(null, ticks);
+          return JSON.stringify({x:Math.round(r.x), y:Math.round(r.y+r.height/2), w:Math.round(r.width), max});
+        })()""")
+        info = json.loads(info) if info else None
+        if not info or not info.get("max"):
+            _close_panels()
+            return "no-slider"
+        cx = info["x"] + int(info["w"] * sec / info["max"])
+        cy = info["y"]
+        wb("cdp", {"method": "Input.dispatchMouseEvent", "params": {"type": "mousePressed", "x": cx, "y": cy, "button": "left", "clickCount": 1}})
+        wb("cdp", {"method": "Input.dispatchMouseEvent", "params": {"type": "mouseReleased", "x": cx, "y": cy, "button": "left", "clickCount": 1}})
+        time.sleep(0.8)
+        # 若未生效，再点一次（面板可能重新定位）
+        check_now = eval_js("""(() => {
+          const b=[...document.querySelectorAll('button')].find(x=>x.getClientRects().length && /^\\d+s$/.test((x.innerText||'').trim()));
+          return b? (b.innerText||'').trim() : null;
+        })()""")
+        if check_now != "%ds" % sec:
+            wb("cdp", {"method": "Input.dispatchMouseEvent", "params": {"type": "mousePressed", "x": cx, "y": cy, "button": "left", "clickCount": 1}})
+            wb("cdp", {"method": "Input.dispatchMouseEvent", "params": {"type": "mouseReleased", "x": cx, "y": cy, "button": "left", "clickCount": 1}})
+            time.sleep(0.8)
+        tick = "slider-click:%d" % sec
+    _close_panels()
+    # 3) 校验时长按钮文本
+    check = eval_js("""(() => {
+      const b=[...document.querySelectorAll('button')].find(x=>x.getClientRects().length && /^\\d+s$/.test((x.innerText||'').trim()));
+      return b? (b.innerText||'').trim() : null;
+    })()""")
+    if check != "%ds" % sec:
+        raise RuntimeError("时长设置失败：期望 %ds，实际 %s" % (sec, check))
     return tick
 
 

@@ -114,6 +114,16 @@ def load_account_book():
     return rows
 
 
+def _is_archived(e):
+    """已归档 = 账本 status=video_ready 且目标文件真实存在（账本可能预填文件名）。"""
+    if e.get("status") != "video_ready":
+        return False
+    fname = e.get("video_filename") or ""
+    if not fname:
+        return False
+    return (pathlib.Path(e["folder"]) / fname).exists()
+
+
 def build_manifest(variant=DEFAULT_VARIANT):
     """扫描主题文件夹，输出批量计划条目。"""
     entries = []
@@ -616,7 +626,7 @@ def cmd_run_one(args):
 def cmd_run_all(args):
     """整批：prepare -> generate -> poll -> download -> archive（逐条串行）。"""
     entries = build_manifest(args.variant)
-    todo = [e for e in entries if not e.get("video_filename")]
+    todo = [e for e in entries if not _is_archived(e)]
     print("整批待执行 %d 条" % len(todo), flush=True)
     for e in todo:
         print("=== [%s] %s" % (e["id"], e["theme"]), flush=True)
@@ -656,7 +666,7 @@ def cmd_run_pipeline(args):
     by_id = {e["id"]: e for e in entries}
     # ---- 阶段 A：提交所有未进入生产的条目
     for e in entries:
-        if e.get("video_filename"):
+        if _is_archived(e):
             print("skip %s (已归档)" % e["id"], flush=True)
             continue
         st = state.get(e["id"], {})
@@ -716,7 +726,7 @@ def cmd_run_batch_conv(args):
     if state_path.exists():
         state = json.loads(state_path.read_text(encoding="utf-8"))
     entries = build_manifest(args.variant)
-    todo = [e for e in entries if not e.get("video_filename")]
+    todo = [e for e in entries if not _is_archived(e)]
     todo.sort(key=lambda e: (e.get("series") or "", e.get("theme") or ""))
     print("同会话批量：%d 条，每 %d 条一个会话" % (len(todo), batch_n), flush=True)
 

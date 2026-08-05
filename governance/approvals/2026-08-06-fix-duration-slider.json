@@ -1,0 +1,17 @@
+{
+  "status": "approved",
+  "approved_by": "human:solo",
+  "approved_at": "2026-08-06T01:40:00+08:00",
+  "approval_reference": "用户明确指令 2026-08-06：视频时长必须与提示词对齐（经典机械变形 12 秒）；修复 _set_duration 支持非刻度秒数",
+  "scope": [
+    "scripts/jimeng_video_batch.py"
+  ],
+  "reason": "时长刻度只有 0/5/10/15…，12s 无法用刻度按钮设置；改为滑块轨道点击（slider-road 优先），并校验时长按钮文本，失败重试。",
+  "risk": "轨道点击依赖页面布局坐标，改版可能失效；校验失败会中止该条，不会错时长提交。",
+  "rollback": "git revert 本次提交；回退为仅刻度点击。",
+  "tests": [
+    "python3 -m py_compile scripts/jimeng_video_batch.py",
+    "python3 scripts/controlled_evolution_guard.py --approval-file governance/approvals/2026-08-06-fix-duration-slider.json",
+    "prepare --id MW-20260806-017 实测 12s/72 积分"
+  ]
+}

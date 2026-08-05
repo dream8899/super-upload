@@ -1,0 +1,16 @@
+{
+  "status": "approved",
+  "approved_by": "human:solo",
+  "approved_at": "2026-08-06T01:00:00+08:00",
+  "approval_reference": "用户明确指令 2026-08-06：经典机械变形 20 条待生成；执行中发现账本预填 video_filename 导致工具误判已归档，批准修复",
+  "scope": [
+    "scripts/jimeng_video_batch.py"
+  ],
+  "reason": "账本可能预填目标文件名（status=draft），原判定把非空 video_filename 当作已归档，导致 0 条待办；改为 status=video_ready 且文件真实存在才算已归档。",
+  "risk": "仅放宽归档判定，不影响提交/校验/查重等门禁；若账本状态不规范需人工核对。",
+  "rollback": "git revert 本次提交；回归判定为仅看 video_filename。",
+  "tests": [
+    "python3 -m py_compile scripts/jimeng_video_batch.py",
+    "python3 scripts/controlled_evolution_guard.py --approval-file governance/approvals/2026-08-06-fix-prefilled-filename.json"
+  ]
+}

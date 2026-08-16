@@ -1,0 +1,33 @@
+{
+  "id": "wechat-draft-real-click-2026-08-16",
+  "date": "2026-08-16",
+  "status": "candidate",
+  "source_task": "Single WeChat Channels video draft-save recovery on macOS",
+  "scope": "WeChat Channels only; a logged-in headed browser page with an uploaded video and a working Kimi WebBridge session.",
+  "evidence": [
+    "The target account was confirmed from the page before upload.",
+    "A browser bridge could inspect the page and fill regular fields, but could not reliably attach a local file through the page's file input.",
+    "A real CoreGraphics mouse event opened the native macOS file chooser; pasting the absolute path through the clipboard preserved non-ASCII path components.",
+    "The first save attempt was rejected by a platform validation message requiring a short title of at least six characters.",
+    "After correcting the required short title, one real save click produced a draft-list count of one and a new timestamped card."
+  ],
+  "proposed_action": [
+    "Keep sau as the default path and use a real browser plus OS-level input only as a recovery path when the CLI cannot complete a page interaction.",
+    "In the recovery path, use the browser bridge for semantic inspection, account confirmation, field validation, and final draft-list verification; use OS-level trusted input for native file selection and any button that synthetic clicks fail to activate.",
+    "Paste, rather than type, absolute file paths containing non-ASCII characters into native macOS dialogs.",
+    "Validate the platform's short-title minimum before the sole intended save action; distinguish a validation-rejected click from a successful save request.",
+    "Treat the draft-list count plus a newly created card/timestamp as the completion proof when the list UI does not expose the title."
+  ],
+  "counterexamples": [
+    "Do not generalize this recovery path to all platforms, browsers, operating systems, or file dialogs.",
+    "Do not use it to bypass account verification, draft-first policy, publish confirmation, deduplication, or one-save-and-verify pacing.",
+    "Do not infer that every title field has the same minimum-length rule; inspect the current platform validation first."
+  ],
+  "risk": "OS coordinates and browser chrome geometry vary by machine; an unverified trusted click can activate the wrong UI. WebBridge commands can also stall during navigation. The recovery path must retain screenshots or semantic checks before every state-changing click.",
+  "recommended_validation": [
+    "Forward-test only in a disposable, user-authorized draft task on macOS.",
+    "Confirm account identity before upload and draft-list evidence after exactly one valid save request.",
+    "Verify a Chinese-path upload and a short-title validation case without publishing."
+  ],
+  "rollback": "Delete this candidate or mark it rejected; it is not loaded by the Skill and does not change runtime behavior."
+}

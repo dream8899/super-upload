@@ -49,6 +49,13 @@ uv run sau tencent upload-video-batch --account main --manifest batch.json
 同一账号始终阻止；同源不同 Remix 需要用户明确允许。直接使用 `sau` 时也必须
 按 `references/media-lineage.md` 手工执行同样门禁。
 
+## 定时发表计划模板
+
+用户指定某视频号账号每天发表数量并授权定时发表时，按
+`references/schedule-templates.md` 模板一排期：固定节点上午 9:00、中午 12:00、
+下午 3:00、晚上 8:00，按序取前 N 个；N 超过 4 时停止并要求人工调整。定时发表属
+公开发布，必须先取得用户明确授权；位置默认不显示地址。
+
 ## 即梦（Jimeng）批量视频生成（上游生产）
 
 即梦是视频生产环节（上传前的上游）；`sau` 不支持即梦，用 Kimi WebBridge 控制已登录
@@ -79,6 +86,7 @@ run-one/run-pipeline/run-batch-conv）。生成视频回写来源文件夹并更
 - Codex、Claude Code、OpenClaw、Kimi WebBridge 等调用约定：`references/agents.md`
 - 驱动、二维码 iframe、cookie 与重复提交故障：`references/troubleshooting.md`
 - 模板 A 的一键调用与逐条文案 JSON：`references/template-a.md`
+- 定时发表计划模板（模板一：每日 N 条、四节点 9/12/15/20）：`references/schedule-templates.md`
 - 三个 Skill 的资产血缘、查重、预约和回写：`references/media-lineage.md`
 - 学习候选、人工审批、核心保护和回滚：`references/controlled-evolution.md`
 - 即梦批量视频生成与避坑：`references/jimeng-video-batch.md`
